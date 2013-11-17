@@ -226,14 +226,7 @@ class API(object):
         # Paradoxically, Shelve doesn't like integer keys.
         return '%s-%s' % (self.CACHE_VERSION, hash((path, tuple(sorted_params))))
 
-    def get(self, path, params=None, result_key=None):
-        """Request a specific path from the EVE API.
-
-        The supplied path should be a slash-separated path
-        frament, e.g. "corp/AssetList". (Basically, the portion
-        of the API url in between the root / and the .xml bit.)
-        """
-
+    def _get(self, path, params=None):
         params = params or {}
         params = dict((k, _clean(v)) for k,v in params.iteritems())
 
@@ -272,6 +265,18 @@ class API(object):
             exc = APIError(code, message)
             _log.error("Raising API error: %r" % exc)
             raise exc
+
+        return tree
+
+    def get(self, path, params=None, result_key=None):
+        """Request a specific path from the EVE API.
+
+        The supplied path should be a slash-separated path
+        frament, e.g. "corp/AssetList". (Basically, the portion
+        of the API url in between the root / and the .xml bit.)
+        """
+
+        tree = self._get(path, params)
 
         # note 1)
         # if a result_key is set to 'result', previous behavior maintains
