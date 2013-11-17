@@ -10,6 +10,7 @@ from xml.etree import ElementTree
 _log = logging.getLogger('evelink.api')
 
 DEFAULT_RESULT_KEY = 'result'
+TOP_LEVEL_KEY = 'eveapi'
 
 
 try:
@@ -78,11 +79,42 @@ def get_bool_value(elem, field):
     return None
 
 
+def get_result_node(tree):
+    """
+    What this method really does is to return a result node if it's a
+    elementtree or a eveapi node.  Could use a better name.
+    """
+
+    if isinstance(tree, ElementTree.ElementTree):
+        tree = tree.getroot()
+
+    if tree.tag == TOP_LEVEL_KEY:
+        return tree.find(DEFAULT_RESULT_KEY)
+    return tree
+
+
+def default_result_formatter(source, result):
+    if not isinstance(source, ElementTree.Element):
+        return result
+
+    if source.tag == 'result':
+        # legacy, stripped result
+        return result
+    elif source.tag == 'eveapi':
+        # append the metadata, in this case cache/expiry times
+        return {
+            'result': result,
+            'current_time': get_ts_value(source, 'currentTime'),
+            'cached_until': get_ts_value(source, 'cachedUntil'),
+        }
+
+
 def elem_getters(elem):
     """Returns a tuple of (_str, _int, _float, _bool, _ts) functions.
 
     These are getters closed around the provided element.
     """
+    elem = get_result_node(elem)
     _str = lambda key: get_named_value(elem, key)
     _int = lambda key: get_int_value(elem, key)
     _float = lambda key: get_float_value(elem, key)
@@ -168,21 +200,6 @@ class APICache(object):
         expiration = time.time() + duration
         self.cache[key] = (value, expiration)
 
-
-def default_result_formatter(source, result):
-    if not isinstance(source, ElementTree.Element):
-        return result
-
-    if source.tag == 'result':
-        # legacy, stripped result
-        return result
-    elif source.tag == 'eveapi':
-        # append the metadata, in this case cache/expiry times
-        return {
-            'result': result,
-            'current_time': get_ts_value(source, 'currentTime'),
-            'cached_until': get_ts_value(source, 'cachedUntil'),
-        }
 
 class API(object):
     """A wrapper around the EVE API."""
@@ -296,15 +313,6 @@ class API(object):
                 return tree
         result = tree.find(result_key)
         return result
-
-    def result_node(self, tree):
-        # XXX move note 1) down into here when it's time to refactor.
-        if isinstance(tree, ElementTree.ElementTree):
-            # ensure that Element is returned, not the ElementTree
-            tree = tree.getroot()
-        if tree.tag == DEFAULT_RESULT_KEY:
-            return tree
-        return tree.find(DEFAULT_RESULT_KEY)
 
     def send_request(self, full_path, params):
         if _has_requests:

@@ -19,7 +19,6 @@ class APITestCase(unittest.TestCase):
         api = evelink_api.API(default_result_key='result')
         self.api = mock.MagicMock(spec=evelink_api.API)
         self.api.format_result = evelink_api.default_result_formatter
-        self.api.result_node = api.result_node
 
     def make_api_result(self, xml_path):
         return make_api_result(xml_path)

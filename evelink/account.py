@@ -14,8 +14,7 @@ class Account(object):
         """Returns the account's subscription status."""
         api_result = self.api.get('account/AccountStatus')
 
-        _str, _int, _float, _bool, _ts = api.elem_getters(
-            self.api.result_node(api_result))
+        _str, _int, _float, _bool, _ts = api.elem_getters(api_result)
 
         result = {
             'paid_ts': _ts('paidUntil'),
@@ -30,7 +29,7 @@ class Account(object):
         """Returns the details of the API key being used to auth."""
 
         raw_api_result = self.api.get('account/APIKeyInfo')
-        api_result = self.api.result_node(raw_api_result)
+        api_result = api.get_result_node(raw_api_result)
 
         key = api_result.find('key')
         result = {
@@ -58,7 +57,7 @@ class Account(object):
         """Returns all of the characters on an account."""
 
         raw_api_result = self.api.get('account/Characters')
-        api_result = self.api.result_node(raw_api_result)
+        api_result = api.get_result_node(raw_api_result)
 
         rowset = api_result.find('rowset')
         result = {}
