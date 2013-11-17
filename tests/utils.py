@@ -37,13 +37,18 @@ class _TestFileAPI(evelink_api.API):
 
 class TestFileAPITestCase(unittest.TestCase):
 
+    test_cls_a = ()
+    test_cls_kw = {}
+
     def setUp(self):
         super(TestFileAPITestCase, self).setUp()
         self.api_old = _TestFileAPI(default_result_key='result')
         self.api = _TestFileAPI(default_result_key=None)
 
-        self.instance_old = self.test_cls(self.api_old)
-        self.instance = self.test_cls(self.api)
+        self.instance_old = self.test_cls(api=self.api_old,
+            *self.test_cls_a, **self.test_cls_kw)
+        self.instance = self.test_cls(api=self.api,
+            *self.test_cls_a, **self.test_cls_kw)
 
     def assertBothCallsEqual(self,
             unbound_test_cls_method, a=(), kw={}, result=None):

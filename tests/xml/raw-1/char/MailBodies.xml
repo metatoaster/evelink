@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<eveapi version="2">
+  <currentTime>2013-01-01 12:34:56</currentTime>
+  <cachedUntil>2013-01-01 12:34:56</cachedUntil>
+  <result>
+  <rowset name="messages" key="messageID" columns="messageID">
+    <row messageID="297023723">Hi.&lt;br&gt;&lt;br&gt;This is a message.&lt;br&gt;&lt;br&gt;</row>
+    <row messageID="297023208">&lt;p&gt;Another message&lt;/p&gt;</row>
+  </rowset>
+  <missingMessageIDs>297023210,297023211</missingMessageIDs>
+</result>
+</eveapi>

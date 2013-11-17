@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<eveapi version="2">
+  <currentTime>2013-01-01 12:34:56</currentTime>
+  <cachedUntil>2013-01-01 12:34:56</cachedUntil>
+  <result>
+  <rowset name="contactNotifications" key="notificationID" columns="notificationID,senderID,senderName,sentDate,messageData">
+    <row notificationID="308734131" senderID="797400947" senderName="CCP Garthagk" sentDate="2010-05-29 23:04:00" messageData="level: 10&#10;message: Hi, I want to social network with you!&#10;"/>
+  </rowset>
+</result>
+</eveapi>

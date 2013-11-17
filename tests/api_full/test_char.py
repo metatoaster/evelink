@@ -1,107 +1,41 @@
-import mock
 import unittest2 as unittest
 
 import evelink.char as evelink_char
-from tests.utils import APITestCase
+from tests.utils import TestFileAPITestCase
 
-@unittest.skipIf(True, 'not adding more mocks when real results are available')
-class CharTestCase(APITestCase):
+
+class CharTestCase(TestFileAPITestCase):
+
+    test_cls_kw = {'char_id': 1}
+    test_cls = evelink_char.Char
 
     def setUp(self):
         super(CharTestCase, self).setUp()
-        self.char = evelink_char.Char(1, api=self.api)
+        self.char = self.instance_old
 
-    @mock.patch('evelink.char.parse_assets')
-    def test_assets(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.assets_api_result
-        mock_parse.return_value = mock.sentinel.parsed_assets
-
+    def test_assets(self):
         result = self.char.assets()
-        self.assertEqual(result, mock.sentinel.parsed_assets)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.assets_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/AssetList', {'characterID': 1}),
-            ])
 
-    @mock.patch('evelink.char.parse_contract_bids')
-    def test_contract_bids(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.contract_bids_api_result
-        mock_parse.return_value = mock.sentinel.parsed_contract_bids
-
+    def test_contract_bids(self):
         result = self.char.contract_bids()
-        self.assertEqual(result, mock.sentinel.parsed_contract_bids)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.contract_bids_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/ContractBids', {'characterID': 1}),
-            ])
 
-    @mock.patch('evelink.char.parse_contract_items')
-    def test_contract_items(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.contract_items_api_result
-        mock_parse.return_value = mock.sentinel.parsed_contract_items
-
+    def test_contract_items(self):
         result = self.char.contract_items(12345)
-        self.assertEqual(result, mock.sentinel.parsed_contract_items)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.contract_items_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/ContractItems', {'characterID': 1, 'contractID': 12345}),
-            ])
 
-    @mock.patch('evelink.char.parse_contracts')
-    def test_contracts(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.contracts_api_result
-        mock_parse.return_value = mock.sentinel.parsed_contracts
-
+    def test_contracts(self):
         result = self.char.contracts()
-        self.assertEqual(result, mock.sentinel.parsed_contracts)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.contracts_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/Contracts', {'characterID': 1}),
-            ])
 
-    @mock.patch('evelink.char.parse_wallet_journal')
-    def test_wallet_journal(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.journal_api_result
-        mock_parse.return_value = mock.sentinel.parsed_journal
-
+    def test_wallet_journal(self):
         result = self.char.wallet_journal()
-        self.assertEqual(result, mock.sentinel.parsed_journal)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.journal_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/WalletJournal', {'characterID': 1}),
-            ])
 
     def test_wallet_paged(self):
-        self.api.get.return_value = self.make_api_result("char/wallet_journal.xml")
-
         self.char.wallet_journal(before_id=1234)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/WalletJournal', {'characterID': 1, 'fromID': 1234}),
-            ])
 
     def test_wallet_limit(self):
-        self.api.get.return_value = self.make_api_result("char/wallet_journal.xml")
-
         self.char.wallet_journal(limit=100)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/WalletJournal', {'characterID': 1, 'rowCount': 100}),
-            ])
 
     def test_wallet_info(self):
-        self.api.get.return_value = self.make_api_result("char/wallet_info.xml")
-
         result = self.char.wallet_info()
-
         self.assertEqual(result,
             {
                 'balance': 209127923.31,
@@ -109,93 +43,31 @@ class CharTestCase(APITestCase):
                 'key': 1000,
             }
         )
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/AccountBalance', {'characterID': 1}),
-            ])
 
     def test_wallet_balance(self):
-        self.api.get.return_value = self.make_api_result("char/wallet_balance.xml")
-
         result = self.char.wallet_balance()
-
         self.assertEqual(result, 209127923.31)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/AccountBalance', {'characterID': 1}),
-            ])
 
-    @mock.patch('evelink.char.parse_wallet_transactions')
-    def test_wallet_transcations(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.transactions_api_result
-        mock_parse.return_value = mock.sentinel.parsed_transactions
-
+    def test_wallet_transcations(self):
         result = self.char.wallet_transactions()
-        self.assertEqual(result, mock.sentinel.parsed_transactions)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.transactions_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/WalletTransactions', {'characterID': 1}),
-            ])
 
     def test_wallet_transactions_paged(self):
-        self.api.get.return_value = self.make_api_result("char/wallet_transactions.xml")
-
         self.char.wallet_transactions(before_id=1234)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/WalletTransactions', {'characterID': 1, 'fromID': 1234}),
-            ])
 
     def test_wallet_transactions_limit(self):
-        self.api.get.return_value = self.make_api_result("char/wallet_transactions.xml")
-
         self.char.wallet_transactions(limit=100)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/WalletTransactions', {'characterID': 1, 'rowCount': 100}),
-            ])
 
-    @mock.patch('evelink.char.parse_industry_jobs')
-    def test_industry_jobs(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.industry_jobs_api_result
-        mock_parse.return_value = mock.sentinel.industry_jobs
-
+    def test_industry_jobs(self):
         result = self.char.industry_jobs()
 
-        self.assertEqual(result, mock.sentinel.industry_jobs)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/IndustryJobs', {'characterID': 1}),
-            ])
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.industry_jobs_api_result),
-            ])
-
-    @mock.patch('evelink.char.parse_kills')
-    def test_kills(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.kills_api_result
-        mock_parse.return_value = mock.sentinel.kills
-
+    def test_kills(self):
         result = self.char.kills()
 
-        self.assertEqual(result, mock.sentinel.kills)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/KillLog', {'characterID': 1}),
-            ])
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.kills_api_result),
-            ])
-
     def test_kills_paged(self):
-        self.api.get.return_value = self.make_api_result("char/kills_paged.xml")
-
         self.char.kills(12345)
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/KillLog', {'characterID': 1, 'beforeKillID': 12345}),
-            ])
 
     def test_character_sheet(self):
-        self.api.get.return_value = self.make_api_result("char/character_sheet.xml")
-
         result = self.char.character_sheet()
-
         self.assertEqual(result, {
             'id': 150337897,
             'name': 'corpslave',
@@ -251,41 +123,14 @@ class CharTestCase(APITestCase):
                   'at_other': {1: {'id': 1, 'name': 'roleDirector'}}},
         'titles': {1: {'id': 1, 'name': 'Member'}},
         })
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/CharacterSheet', {'characterID': 1}),
-            ])
 
-    @mock.patch('evelink.char.parse_contact_list')
-    def test_contacts(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.contacts_api_result
-        mock_parse.return_value = mock.sentinel.parsed_contacts
-
+    def test_contacts(self):
         result = self.char.contacts()
-        self.assertEqual(result, mock.sentinel.parsed_contacts)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.contacts_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/ContactList', {'characterID': 1}),
-            ])
 
-    @mock.patch('evelink.char.parse_market_orders')
-    def test_orders(self, mock_parse):
-        self.api.get.return_value = mock.sentinel.orders_api_result
-        mock_parse.return_value = mock.sentinel.parsed_orders
-
+    def test_orders(self):
         result = self.char.orders()
-        self.assertEqual(result, mock.sentinel.parsed_orders)
-        self.assertEqual(mock_parse.mock_calls, [
-                mock.call(mock.sentinel.orders_api_result),
-            ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/MarketOrders', {'characterID': 1}),
-            ])
 
     def test_notifications(self):
-        self.api.get.return_value = self.make_api_result("char/notifications.xml")
-
         result = self.char.notifications()
 
         self.assertEqual(result, {
@@ -301,15 +146,8 @@ class CharTestCase(APITestCase):
                         'type_id': 16}
             })
 
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/Notifications', {'characterID': 1}),
-            ])
-
     def test_notification_texts(self):
-        self.api.get.return_value = self.make_api_result("char/notification_texts.xml")
-
         result = self.char.notification_texts(1234)
-
         self.assertEqual(result, {
             374044083: {'shipTypeID': 606,
                         'id': 374044083,
@@ -338,15 +176,8 @@ class CharTestCase(APITestCase):
                         'amount': 5125528.4,
                         'id': 374133265}})
 
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/NotificationTexts', {'characterID': 1, 'IDs': 1234}),
-            ])
-
     def test_standings(self):
-        self.api.get.return_value = self.make_api_result("char/standings.xml")
-
         result = self.char.standings()
-
         self.assertEqual(result, {
                 'agents': {3009841: {'id': 3009841, 'name': 'Pausent Ansin', 'standing': 0.1},
                            3009846: {'id': 3009846, 'name': 'Charie Octienne', 'standing': 0.19}},
@@ -357,15 +188,8 @@ class CharTestCase(APITestCase):
                              500020: {'id': 500020, 'name': 'Serpentis', 'standing': -1}}},
                 )
 
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/Standings', {'characterID': 1}),
-            ])
-
     def test_research(self):
-        self.api.get.return_value = self.make_api_result("char/research.xml")
-
         result = self.char.research()
-
         self.assertEqual(result, {
             3014201: {
                 'id': 3014201,
@@ -375,15 +199,8 @@ class CharTestCase(APITestCase):
                 'timestamp': 1178692470}
             })
 
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/Research', {'characterID': 1}),
-            ])
-
     def test_current_training(self):
-        self.api.get.return_value = self.make_api_result("char/current_training.xml")
-
         result = self.char.current_training()
-
         self.assertEqual(result, {
             'current_ts': 1291690831,
             'end_sp': 2048000,
@@ -395,13 +212,7 @@ class CharTestCase(APITestCase):
             'type_id': 23950
             })
 
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/SkillInTraining', {'characterID': 1}),
-            ])
-
     def test_skill_queue(self):
-        self.api.get.return_value = self.make_api_result("char/skill_queue.xml")
-
         result = self.char.skill_queue()
 
         self.assertEqual(result, [
@@ -423,15 +234,8 @@ class CharTestCase(APITestCase):
                 'type_id': 3437},
             ])
 
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/SkillQueue', {'characterID': 1}),
-            ])
-
     def test_messages(self):
-        self.api.get.return_value = self.make_api_result("char/messages.xml")
-
         result = self.char.messages()
-
         self.assertEqual(result, [
                 {
                     'id': 290285276,
@@ -467,47 +271,26 @@ class CharTestCase(APITestCase):
                     },
                 },
             ])
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/MailMessages', {'characterID': 1}),
-            ])
 
     def test_message_bodies(self):
-        self.api.get.return_value = self.make_api_result("char/message_bodies.xml")
-
         result = self.char.message_bodies([297023723,297023208,297023210,297023211])
-
         self.assertEqual(result, {
                 297023208: '<p>Another message</p>',
                 297023210: None,
                 297023211: None,
                 297023723: 'Hi.<br><br>This is a message.<br><br>',
             })
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/MailBodies', {
-                    'characterID': 1,
-                    'ids': [297023723,297023208,297023210,297023211],
-                }),
-            ])
 
     def test_mailing_lists(self):
-        self.api.get.return_value = self.make_api_result("char/mailing_lists.xml")
-
         result = self.char.mailing_lists()
-
         self.assertEqual(result, {
                 128250439: "EVETycoonMail",
                 128783669: "EveMarketScanner",
                 141157801: "Exploration Wormholes",
             })
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/MailingLists'),
-            ])
 
     def test_calendar_events(self):
-        self.api.get.return_value = self.make_api_result("char/calendar_events.xml")
-
         result = self.char.calendar_events()
-
         self.assertEqual(result, {
                 93264: {
                     'description': 'Join us for <a href="http://fanfest.eveonline.com/">     EVE Online\'s Fanfest 2011</a>!',
@@ -523,17 +306,9 @@ class CharTestCase(APITestCase):
                     'title': 'EVE Online Fanfest 2011',
                 },
             })
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/UpcomingCalendarEvents', {
-                    'characterID': 1,
-                }),
-            ])
 
     def test_calendar_attendees(self):
-        self.api.get.return_value = self.make_api_result("char/calendar_attendees.xml")
-
         result = self.char.calendar_attendees([123, 234, 345])
-
         self.assertEqual(result, {
                 123: {
                     123456789: {
@@ -561,24 +336,12 @@ class CharTestCase(APITestCase):
                 },
                 345: {},
             })
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/CalendarEventAttendees', {
-                    'characterID': 1,
-                    'eventIDs': [123, 234, 345],
-                }),
-            ])
 
-    @mock.patch('evelink.char.Char.calendar_attendees')
-    def test_event_attendees(self, mock_calendar):
-        mock_calendar.return_value = {42: mock.sentinel.attendees}
         result = self.char.event_attendees(42)
-        self.assertEqual(result, mock.sentinel.attendees)
+
 
     def test_faction_warfare_stats(self):
-        self.api.get.return_value = self.make_api_result("char/faction_warfare_stats.xml")
-
         result = self.char.faction_warfare_stats()
-
         self.assertEqual(result, {
                 'enlist_ts': 1213135800,
                 'faction': {'id': 500001, 'name': 'Caldari State'},
@@ -586,15 +349,9 @@ class CharTestCase(APITestCase):
                 'points': {'total': 0, 'week': 1044, 'yesterday': 0},
                 'rank': {'current': 4, 'highest': 4},
             })
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/FacWarStats', {'characterID': 1}),
-            ])
 
     def test_medals(self):
-        self.api.get.return_value = self.make_api_result("char/medals.xml")
-
         result = self.char.medals()
-
         self.assertEqual(result, {
                 'current': {},
                 'other': {
@@ -608,17 +365,8 @@ class CharTestCase(APITestCase):
                         'title': 'Medal of Service'}}
             })
 
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/Medals', {
-                    'characterID': 1
-                }),
-            ])
-
     def test_contact_notifications(self):
-        self.api.get.return_value = self.make_api_result("char/contact_notifications.xml")
-
         result = self.char.contact_notifications()
-
         self.assertEqual(result, {
                 308734131: {
                     'data': {
@@ -633,17 +381,9 @@ class CharTestCase(APITestCase):
                     'timestamp': 1275174240,
                 },
             })
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/ContactNotifications', {'characterID': 1}),
-            ])
 
     def test_locations(self):
-        self.api.get.return_value = self.make_api_result("char/locations.xml")
-
         result = self.char.locations((1009661446486L, 1007448817800L))
-        self.assertEqual(self.api.mock_calls, [
-                mock.call.get('char/Locations', {'characterID': 1, 'IDs': (1009661446486L, 1007448817800L),}),
-            ])
         self.assertEqual(result,
             {1009661446486L: 
                 {
