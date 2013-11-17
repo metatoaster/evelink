@@ -73,7 +73,7 @@ class TestFileAPITestCase(unittest.TestCase):
         self.assertIn('current_time', new)
         self.assertIn('cached_until', new)
 
-        if self.default_get_params and (a or kw):
+        if self.default_get_params and not (a or kw):
             self.assertIn(self.default_get_params, self.api_old.get_params)
             self.assertIn(self.default_get_params, self.api.get_params)
 

@@ -9,11 +9,10 @@ class CharTestCase(TestFileAPITestCase):
     test_cls_kw = {'char_id': 1}
     test_cls = Char
 
-    default_params = {'characterID': 1}
-
     def setUp(self):
         super(CharTestCase, self).setUp()
         self.char = self.instance_old
+        self.default_get_params = {'characterID': 1}
 
     def test_assets(self):
         result = self.assertGetBoth(Char.assets)
@@ -36,19 +35,25 @@ class CharTestCase(TestFileAPITestCase):
             'quantity': 490, 'id': 779703190, 'type_id': 17867})
 
     def test_contracts(self):
-        result = self.char.contracts()
+        result = self.assertGetBoth(Char.contracts)
+        self.assertIn(5968, result)
 
     def test_wallet_journal(self):
-        result = self.char.wallet_journal()
+        result = self.assertGetBoth(Char.wallet_journal)
+        self.assertEqual(len(result), 5)
 
     def test_wallet_paged(self):
-        self.char.wallet_journal(before_id=1234)
+        result = self.assertGetBoth(Char.wallet_journal, before_id=1234)
+        self.assertIn({'characterID': 1, 'fromID': 1234},
+            self.api.get_params)
 
     def test_wallet_limit(self):
-        self.char.wallet_journal(limit=100)
+        result = self.assertGetBoth(Char.wallet_journal, limit=100)
+        self.assertIn({'characterID': 1, 'rowCount': 100},
+            self.api.get_params)
 
     def test_wallet_info(self):
-        result = self.char.wallet_info()
+        result = self.assertGetBoth(Char.wallet_info)
         self.assertEqual(result,
             {
                 'balance': 209127923.31,
@@ -58,29 +63,42 @@ class CharTestCase(TestFileAPITestCase):
         )
 
     def test_wallet_balance(self):
-        result = self.char.wallet_balance()
+        result = self.assertGetBoth(Char.wallet_balance)
         self.assertEqual(result, 209127923.31)
 
     def test_wallet_transcations(self):
-        result = self.char.wallet_transactions()
+        result = self.assertGetBoth(Char.wallet_transactions)
+        self.assertEqual(len(result), 4)
 
     def test_wallet_transactions_paged(self):
-        self.char.wallet_transactions(before_id=1234)
+        result = self.assertGetBoth(Char.wallet_transactions, before_id=1234)
+        self.assertIn({'characterID': 1, 'fromID': 1234},
+            self.api.get_params)
+        self.assertEqual(len(result), 4)
 
     def test_wallet_transactions_limit(self):
-        self.char.wallet_transactions(limit=100)
+        result = self.assertGetBoth(Char.wallet_transactions, limit=100)
+        self.assertIn({'characterID': 1, 'rowCount': 100},
+            self.api.get_params)
+        self.assertEqual(len(result), 4)
 
     def test_industry_jobs(self):
-        result = self.char.industry_jobs()
+        result = self.assertGetBoth(Char.industry_jobs)
+        self.assertIn(19962573, result)
 
     def test_kills(self):
-        result = self.char.kills()
+        result = self.assertGetBoth(Char.kills)
+        self.assertEqual(len(result), 2)
+        self.assertIn(15640545, result)
 
     def test_kills_paged(self):
-        self.char.kills(12345)
+        result = self.assertGetBoth(Char.kills, 12345)
+        self.assertIn({'characterID': 1, 'beforeKillID': 12345},
+            self.api.get_params)
+        self.assertEqual(len(result), 2)
 
     def test_character_sheet(self):
-        result = self.char.character_sheet()
+        result = self.assertGetBoth(Char.character_sheet)
         self.assertEqual(result, {
             'id': 150337897,
             'name': 'corpslave',
@@ -138,13 +156,15 @@ class CharTestCase(TestFileAPITestCase):
         })
 
     def test_contacts(self):
-        result = self.char.contacts()
+        result = self.assertGetBoth(Char.contacts)
+        self.assertIn(544497016, result['personal'])
 
     def test_orders(self):
-        result = self.char.orders()
+        result = self.assertGetBoth(Char.orders)
+        self.assertIn(2579890411, result)
 
     def test_notifications(self):
-        result = self.char.notifications()
+        result = self.assertGetBoth(Char.notifications)
 
         self.assertEqual(result, {
             303795523: {'id': 303795523,
@@ -160,7 +180,9 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_notification_texts(self):
-        result = self.char.notification_texts(1234)
+        result = self.assertGetBoth(Char.notification_texts, 1234)
+        self.assertIn({'characterID': 1, 'IDs': 1234},
+            self.api.get_params)
         self.assertEqual(result, {
             374044083: {'shipTypeID': 606,
                         'id': 374044083,
@@ -190,7 +212,7 @@ class CharTestCase(TestFileAPITestCase):
                         'id': 374133265}})
 
     def test_standings(self):
-        result = self.char.standings()
+        result = self.assertGetBoth(Char.standings)
         self.assertEqual(result, {
                 'agents': {3009841: {'id': 3009841, 'name': 'Pausent Ansin', 'standing': 0.1},
                            3009846: {'id': 3009846, 'name': 'Charie Octienne', 'standing': 0.19}},
@@ -202,7 +224,7 @@ class CharTestCase(TestFileAPITestCase):
                 )
 
     def test_research(self):
-        result = self.char.research()
+        result = self.assertGetBoth(Char.research)
         self.assertEqual(result, {
             3014201: {
                 'id': 3014201,
@@ -213,7 +235,7 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_current_training(self):
-        result = self.char.current_training()
+        result = self.assertGetBoth(Char.current_training)
         self.assertEqual(result, {
             'current_ts': 1291690831,
             'end_sp': 2048000,
@@ -226,7 +248,7 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_skill_queue(self):
-        result = self.char.skill_queue()
+        result = self.assertGetBoth(Char.skill_queue)
 
         self.assertEqual(result, [
             {
@@ -248,7 +270,7 @@ class CharTestCase(TestFileAPITestCase):
             ])
 
     def test_messages(self):
-        result = self.char.messages()
+        result = self.assertGetBoth(Char.messages)
         self.assertEqual(result, [
                 {
                     'id': 290285276,
@@ -286,7 +308,11 @@ class CharTestCase(TestFileAPITestCase):
             ])
 
     def test_message_bodies(self):
-        result = self.char.message_bodies([297023723,297023208,297023210,297023211])
+        result = self.assertGetBoth(Char.message_bodies,
+            [297023723, 297023208, 297023210, 297023211])
+        self.assertIn({'characterID': 1, 'ids':
+                [297023723, 297023208, 297023210, 297023211]},
+            self.api.get_params)
         self.assertEqual(result, {
                 297023208: '<p>Another message</p>',
                 297023210: None,
@@ -295,7 +321,8 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_mailing_lists(self):
-        result = self.char.mailing_lists()
+        self.default_get_params = None
+        result = self.assertGetBoth(Char.mailing_lists)
         self.assertEqual(result, {
                 128250439: "EVETycoonMail",
                 128783669: "EveMarketScanner",
@@ -303,7 +330,7 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_calendar_events(self):
-        result = self.char.calendar_events()
+        result = self.assertGetBoth(Char.calendar_events)
         self.assertEqual(result, {
                 93264: {
                     'description': 'Join us for <a href="http://fanfest.eveonline.com/">     EVE Online\'s Fanfest 2011</a>!',
@@ -321,7 +348,9 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_calendar_attendees(self):
-        result = self.char.calendar_attendees([123, 234, 345])
+        result = self.assertGetBoth(Char.calendar_attendees, [123, 234, 345])
+        self.assertIn({'characterID': 1, 'eventIDs': [123, 234, 345]},
+            self.api.get_params)
         self.assertEqual(result, {
                 123: {
                     123456789: {
@@ -350,11 +379,12 @@ class CharTestCase(TestFileAPITestCase):
                 345: {},
             })
 
-        result = self.char.event_attendees(42)
+        result = self.assertGetBoth(Char.event_attendees, 42)
+        self.assertEqual(result, {})
 
 
     def test_faction_warfare_stats(self):
-        result = self.char.faction_warfare_stats()
+        result = self.assertGetBoth(Char.faction_warfare_stats)
         self.assertEqual(result, {
                 'enlist_ts': 1213135800,
                 'faction': {'id': 500001, 'name': 'Caldari State'},
@@ -364,7 +394,7 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_medals(self):
-        result = self.char.medals()
+        result = self.assertGetBoth(Char.medals)
         self.assertEqual(result, {
                 'current': {},
                 'other': {
@@ -379,7 +409,7 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_contact_notifications(self):
-        result = self.char.contact_notifications()
+        result = self.assertGetBoth(Char.contact_notifications)
         self.assertEqual(result, {
                 308734131: {
                     'data': {
@@ -396,7 +426,11 @@ class CharTestCase(TestFileAPITestCase):
             })
 
     def test_locations(self):
-        result = self.char.locations((1009661446486L, 1007448817800L))
+        result = self.assertGetBoth(Char.locations,
+            (1009661446486L, 1007448817800L))
+        self.assertIn(
+            {'IDs': (1009661446486L, 1007448817800L), 'characterID': 1},
+            self.api.get_params)
         self.assertEqual(result,
             {1009661446486L: 
                 {
