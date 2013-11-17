@@ -93,20 +93,43 @@ def get_result_node(tree):
     return tree
 
 
-def default_result_formatter(source, result):
-    if not isinstance(source, ElementTree.Element):
-        return result
+class DefaultResultFormatter(object):
 
-    if source.tag == 'result':
-        # legacy, stripped result
-        return result
-    elif source.tag == 'eveapi':
-        # append the metadata, in this case cache/expiry times
-        return {
-            'result': result,
-            'current_time': get_ts_value(source, 'currentTime'),
-            'cached_until': get_ts_value(source, 'cachedUntil'),
-        }
+    def unformat(self, result):
+
+        def null(value):
+            return value
+
+        def reformat(value):
+            r = {}
+            r.update(result)
+            r['result'] = value
+            return r
+
+        if (isinstance(result, dict) and 'current_time' in result and
+                'cached_until' in result):
+            return result.get('result'), reformat
+        return result, null
+
+    def format(self, source, result):
+        if not isinstance(source, ElementTree.Element):
+            return result
+
+        if source.tag == 'result':
+            # legacy, stripped result
+            return result
+        elif source.tag == 'eveapi':
+            # append the metadata, in this case cache/expiry times
+            return {
+                'result': result,
+                'current_time': get_ts_value(source, 'currentTime'),
+                'cached_until': get_ts_value(source, 'cachedUntil'),
+            }
+
+    def __call__(self, source, result):
+        return self.format(source, result)
+
+default_result_formatter = DefaultResultFormatter()
 
 
 def elem_getters(elem):
@@ -228,11 +251,7 @@ class API(object):
         # consider making this a callable class instance?  type checking
         # can be provided using that.
         self.result_formatter = result_formatter
-
-    def format_result(self, source, result):
-        # this is to allow easier sanity check specific to subclasses,
-        # perhaps.
-        return self.result_formatter(source, result)
+        self.format_result = result_formatter
 
     def _set_last_timestamps(self, current_time=0, cached_until=0):
         self.last_timestamps = {
