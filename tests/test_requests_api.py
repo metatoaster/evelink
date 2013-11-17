@@ -69,6 +69,38 @@ class RequestsAPITestCase(unittest.TestCase):
             'cached_until': 1258563931,
         })
 
+    def test_get_result_key(self):
+        # mock up a sessions compatible response object and pretend to have
+        # nothing chached; similar pattern below for all test_get_* methods
+        self.mock_sessions.post.return_value = DummyResponse(self.test_xml)
+        self.cache.get.return_value = None
+
+        tree = self.api.get('foo/Bar', {'a':[1,2,3]}, result_key='')
+        result = tree.find('result')
+
+        rowset = result.find('rowset')
+        rows = rowset.findall('row')
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0].attrib['foo'], 'bar')
+        self.assertEqual(self.api.last_timestamps, {
+            'current_time': 1255885531,
+            'cached_until': 1258563931,
+        })
+
+    def test_get_default_result_key(self):
+        # mock up a sessions compatible response object and pretend to have
+        # nothing chached; similar pattern below for all test_get_* methods
+        self.mock_sessions.post.return_value = DummyResponse(self.test_xml)
+        self.cache.get.return_value = None
+
+        api = evelink_api.API(cache=self.cache, default_result_key=None)
+        tree = api.get('foo/Bar', {'a':[1,2,3]})
+        self.assertEqual(len(tree.findall('result')), 1)
+
+        result = api.get('foo/Bar', {'a':[1,2,3]}, result_key='result')
+        self.assertEqual(len(result.findall('result')), 0)
+        self.assertEqual(len(result.findall('rowset')), 1)
+
     def test_cached_get(self):
         """Make sure that we don't try to call the API if the result is cached."""
         # mock up a sessions compatible error response, and pretend to have a

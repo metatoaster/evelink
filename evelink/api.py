@@ -169,7 +169,12 @@ class APICache(object):
 class API(object):
     """A wrapper around the EVE API."""
 
-    def __init__(self, base_url="api.eveonline.com", cache=None, api_key=None):
+    def __init__(self,
+            base_url="api.eveonline.com",
+            cache=None,
+            api_key=None,
+            default_result_key='result', # see note 1)
+        ):
         self.base_url = base_url
 
         cache = cache or APICache()
@@ -183,6 +188,8 @@ class API(object):
         self.api_key = api_key
         self._set_last_timestamps()
 
+        self.default_result_key = default_result_key
+
     def _set_last_timestamps(self, current_time=0, cached_until=0):
         self.last_timestamps = {
             'current_time': current_time,
@@ -194,7 +201,7 @@ class API(object):
         # Paradoxically, Shelve doesn't like integer keys.
         return '%s-%s' % (self.CACHE_VERSION, hash((path, tuple(sorted_params))))
 
-    def get(self, path, params=None):
+    def get(self, path, params=None, result_key=None):
         """Request a specific path from the EVE API.
 
         The supplied path should be a slash-separated path
@@ -241,7 +248,17 @@ class API(object):
             _log.error("Raising API error: %r" % exc)
             raise exc
 
-        result = tree.find('result')
+        # note 1)
+        # if a result_key is set to 'result', previous behavior maintains
+        # for existing API users.  Current internal calls to this method
+        # MUST pass an empty string ('') value to ensure that the
+        # metadata (timestamps) are captured.
+        if result_key is None:
+            result_key = self.default_result_key
+
+        if not result_key:
+            return tree
+        result = tree.find(result_key)
         return result
 
     def send_request(self, full_path, params):

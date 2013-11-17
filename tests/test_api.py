@@ -108,6 +108,38 @@ class APITestCase(unittest.TestCase):
         })
 
     @mock.patch('urllib2.urlopen')
+    def test_get_result_key(self, mock_urlopen):
+        # mock up an urlopen compatible response object and pretend to have no
+        # cached results; similar pattern for all test_get_* methods below.
+        mock_urlopen.return_value = StringIO(self.test_xml)
+        self.cache.get.return_value = None
+
+        tree = self.api.get('foo/Bar', {'a':[1,2,3]}, result_key='')
+        result = tree.find('result')
+        rowset = result.find('rowset')
+        rows = rowset.findall('row')
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0].attrib['foo'], 'bar')
+
+    @mock.patch('urllib2.urlopen')
+    def test_get_default_result_key(self, mock_urlopen):
+        # mock up an urlopen compatible response object and pretend to have no
+        # cached results; similar pattern for all test_get_* methods below.
+        mock_urlopen.return_value = StringIO(self.test_xml)
+        self.cache.get.return_value = None
+
+        api = evelink_api.API(cache=self.cache, default_result_key=None)
+        tree = api.get('foo/Bar', {'a':[1,2,3]})
+        self.assertEqual(len(tree.findall('result')), 1)
+
+        mock_urlopen.return_value = StringIO(self.test_xml)
+        self.cache.get.return_value = None
+
+        result = api.get('foo/Bar', {'a':[1,2,3]}, result_key='result')
+        self.assertEqual(len(result.findall('result')), 0)
+        self.assertEqual(len(result.findall('rowset')), 1)
+
+    @mock.patch('urllib2.urlopen')
     def test_cached_get(self, mock_urlopen):
         """Make sure that we don't try to call the API if the result is cached."""
         # mock up a urlopen compatible error response, and pretend to have a
