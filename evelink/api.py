@@ -208,6 +208,8 @@ class API(object):
         self._set_last_timestamps()
 
         self.default_result_key = default_result_key
+        # consider making this a callable class instance?  type checking
+        # can be provided using that.
         self.result_formatter = result_formatter
 
     def format_result(self, source, result):
@@ -287,9 +289,22 @@ class API(object):
             result_key = self.default_result_key
 
         if not result_key:
-            return tree
+            if isinstance(tree, ElementTree.ElementTree):
+                # ensure that Element is returned, not the ElementTree
+                return tree.getroot()
+            else:
+                return tree
         result = tree.find(result_key)
         return result
+
+    def result_node(self, tree):
+        # XXX move note 1) down into here when it's time to refactor.
+        if isinstance(tree, ElementTree.ElementTree):
+            # ensure that Element is returned, not the ElementTree
+            tree = tree.getroot()
+        if tree.tag == DEFAULT_RESULT_KEY:
+            return tree
+        return tree.find(DEFAULT_RESULT_KEY)
 
     def send_request(self, full_path, params):
         if _has_requests:

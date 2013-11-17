@@ -16,8 +16,10 @@ def make_api_result(xml_path):
 class APITestCase(unittest.TestCase):
     def setUp(self):
         super(APITestCase, self).setUp()
+        api = evelink_api.API(default_result_key='result')
         self.api = mock.MagicMock(spec=evelink_api.API)
         self.api.format_result = evelink_api.default_result_formatter
+        self.api.result_node = api.result_node
 
     def make_api_result(self, xml_path):
         return make_api_result(xml_path)
@@ -35,9 +37,20 @@ class _TestFileAPI(evelink_api.API):
 
 
 class TestFileAPITestCase(unittest.TestCase):
+
     def setUp(self):
         super(TestFileAPITestCase, self).setUp()
-        self.api = _TestFileAPI()
+        self.api_old = _TestFileAPI(default_result_key='result')
+        self.api = _TestFileAPI(default_result_key=None)
 
-    def make_api_result(self, xml_path):
-        return make_api_result(xml_path)
+        self.instance_old = self.test_cls(self.api_old)
+        self.instance = self.test_cls(self.api)
+
+    def assertBothCallsEqual(self,
+            unbound_test_cls_method, a=(), kw={}, result=None):
+        self.assertEqual(
+            unbound_test_cls_method(self.instance_old, *a, **kw),
+            result)
+        self.assertEqual(
+            unbound_test_cls_method(self.instance, *a, **kw).get('result'),
+            result)
