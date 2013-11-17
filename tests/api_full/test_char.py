@@ -9,6 +9,8 @@ class CharTestCase(TestFileAPITestCase):
     test_cls_kw = {'char_id': 1}
     test_cls = Char
 
+    default_params = {'characterID': 1}
+
     def setUp(self):
         super(CharTestCase, self).setUp()
         self.char = self.instance_old

@@ -45,6 +45,8 @@ class TestFileAPITestCase(unittest.TestCase):
     test_cls_a = ()
     test_cls_kw = {}
 
+    default_get_params = None
+
     def setUp(self):
         super(TestFileAPITestCase, self).setUp()
         self.api_old = _TestFileAPI(default_result_key='result')
@@ -70,4 +72,9 @@ class TestFileAPITestCase(unittest.TestCase):
         self.assertEqual(old, new.get('result'))
         self.assertIn('current_time', new)
         self.assertIn('cached_until', new)
+
+        if self.default_get_params and (a or kw):
+            self.assertIn(self.default_get_params, self.api_old.get_params)
+            self.assertIn(self.default_get_params, self.api.get_params)
+
         return old
