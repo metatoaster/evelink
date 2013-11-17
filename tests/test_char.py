@@ -645,7 +645,7 @@ class CharTestCase(APITestCase):
                 mock.call.get('char/Locations', {'characterID': 1, 'IDs': (1009661446486L, 1007448817800L),}),
             ])
         self.assertEqual(result,
-            {1009661446486L: 
+            {1009661446486L:
                 {
                     'id': 1009661446486L,
                     'x': None,

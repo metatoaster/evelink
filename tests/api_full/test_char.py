@@ -379,6 +379,15 @@ class CharTestCase(TestFileAPITestCase):
                 345: {},
             })
 
+        result = self.assertGetBoth(Char.event_attendees, 123)
+        self.assertEqual(result, {
+            987654321:
+                {'response': 'Tentative', 'id': 987654321, 'name': 'John Doe'},
+            123456789:
+                {'response': 'Accepted', 'id': 123456789, 'name': 'Jane Doe'}
+        })
+
+        # ensure missing doesn't fail.
         result = self.assertGetBoth(Char.event_attendees, 42)
         self.assertEqual(result, {})
 
