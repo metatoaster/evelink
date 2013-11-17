@@ -28,7 +28,12 @@ class _TestFileAPI(evelink_api.API):
 
     _result_set = 'raw-1'
 
+    def __init__(self, *a, **kw):
+        super(_TestFileAPI, self).__init__(*a, **kw)
+        self.get_params = []
+
     def _get(self, path, params=None):
+        self.get_params.append(params)
         xml_dir = os.path.join(os.path.dirname(
             os.path.abspath(__file__)), 'xml', self._result_set)
         with open(os.path.join(xml_dir, path + '.xml')) as f:
@@ -59,7 +64,7 @@ class TestFileAPITestCase(unittest.TestCase):
             unbound_test_cls_method(self.instance, *a, **kw).get('result'),
             result)
 
-    def assertGetBoth(self, unbound_test_cls_method, a=(), kw={}):
+    def assertGetBoth(self, unbound_test_cls_method, *a, **kw):
         old = unbound_test_cls_method(self.instance_old, *a, **kw)
         new = unbound_test_cls_method(self.instance, *a, **kw)
         self.assertEqual(old, new.get('result'))

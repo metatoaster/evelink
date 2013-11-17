@@ -16,12 +16,22 @@ class CharTestCase(TestFileAPITestCase):
     def test_assets(self):
         result = self.assertGetBoth(Char.assets)
         self.assertIn(67000050, result)
+        self.assertIn({'characterID': 1}, self.api.get_params)
+        self.assertIn({'characterID': 1}, self.api_old.get_params)
 
     def test_contract_bids(self):
-        result = self.char.contract_bids()
+        result = self.assertGetBoth(Char.contract_bids)
+        self.assertEqual(result[0], {'timestamp': 1178692470,
+            'amount': 1958.12, 'bidder_id': 984127, 'id': 123456,
+            'contract_id': 8439234})
 
     def test_contract_items(self):
-        result = self.char.contract_items(12345)
+        result = self.assertGetBoth(Char.contract_items, 12345)
+        self.assertIn({'characterID': 1, 'contractID': 12345},
+            self.api.get_params)
+        self.assertEqual(len(result), 4)
+        self.assertEqual(result[0], {'action': 'offered', 'singleton': False,
+            'quantity': 490, 'id': 779703190, 'type_id': 17867})
 
     def test_contracts(self):
         result = self.char.contracts()
