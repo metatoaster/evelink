@@ -9,6 +9,9 @@ from xml.etree import ElementTree
 
 _log = logging.getLogger('evelink.api')
 
+DEFAULT_RESULT_KEY = 'result'
+
+
 try:
     import requests
     _has_requests = True
@@ -188,7 +191,7 @@ class API(object):
             base_url="api.eveonline.com",
             cache=None,
             api_key=None,
-            default_result_key='result', # see note 1)
+            default_result_key=DEFAULT_RESULT_KEY, # see note 1)
             result_formatter=default_result_formatter,
         ):
         self.base_url = base_url
