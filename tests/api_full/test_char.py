@@ -1,20 +1,21 @@
 import unittest2 as unittest
 
-import evelink.char as evelink_char
+from evelink.char import Char
 from tests.utils import TestFileAPITestCase
 
 
 class CharTestCase(TestFileAPITestCase):
 
     test_cls_kw = {'char_id': 1}
-    test_cls = evelink_char.Char
+    test_cls = Char
 
     def setUp(self):
         super(CharTestCase, self).setUp()
         self.char = self.instance_old
 
     def test_assets(self):
-        result = self.char.assets()
+        result = self.assertGetBoth(Char.assets)
+        self.assertIn(67000050, result)
 
     def test_contract_bids(self):
         result = self.char.contract_bids()

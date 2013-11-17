@@ -58,3 +58,11 @@ class TestFileAPITestCase(unittest.TestCase):
         self.assertEqual(
             unbound_test_cls_method(self.instance, *a, **kw).get('result'),
             result)
+
+    def assertGetBoth(self, unbound_test_cls_method, a=(), kw={}):
+        old = unbound_test_cls_method(self.instance_old, *a, **kw)
+        new = unbound_test_cls_method(self.instance, *a, **kw)
+        self.assertEqual(old, new.get('result'))
+        self.assertIn('current_time', new)
+        self.assertIn('cached_until', new)
+        return old
