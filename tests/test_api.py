@@ -1,5 +1,7 @@
 import unittest2 as unittest
 
+from xml.etree import ElementTree
+
 import evelink.api as evelink_api
 
 class HelperTestCase(unittest.TestCase):
@@ -22,6 +24,45 @@ class CacheTestCase(unittest.TestCase):
     def test_expire(self):
         self.cache.put('baz', 'qux', -1)
         self.assertEqual(self.cache.get('baz'), None)
+
+
+class DefaultResultFormatterTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.test_xml = r"""
+                <?xml version='1.0' encoding='UTF-8'?>
+                <eveapi version="2">
+                    <currentTime>2009-10-18 17:05:31</currentTime>
+                    <result>
+                        <rowset>
+                            <row foo="bar" />
+                            <row foo="baz" />
+                        </rowset>
+                    </result>
+                    <cachedUntil>2009-11-18 17:05:31</cachedUntil>
+                </eveapi>
+            """.strip()
+        self.tree = ElementTree.fromstring(self.test_xml)
+
+    def test_format_tree(self):
+        r = 'bar'
+        result = evelink_api.default_result_formatter(self.tree, r)
+        self.assertEqual(result, {
+            'result': 'bar',
+            'current_time': 1255885531,
+            'cached_until': 1258563931,
+        })
+
+    def test_format_result(self):
+        r = 'bar'
+        result_tree = self.tree.find('result')
+        result = evelink_api.default_result_formatter(result_tree, r)
+        self.assertEqual(result, 'bar')
+
+    def test_format_result_bad_tree(self):
+        r = 'bar'
+        result = evelink_api.default_result_formatter(None, r)
+        self.assertEqual(result, 'bar')
 
 
 if __name__ == "__main__":

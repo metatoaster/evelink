@@ -166,6 +166,21 @@ class APICache(object):
         self.cache[key] = (value, expiration)
 
 
+def default_result_formatter(source, result):
+    if not isinstance(source, ElementTree.Element):
+        return result
+
+    if source.tag == 'result':
+        # legacy, stripped result
+        return result
+    elif source.tag == 'eveapi':
+        # append the metadata, in this case cache/expiry times
+        return {
+            'result': result,
+            'current_time': get_ts_value(source, 'currentTime'),
+            'cached_until': get_ts_value(source, 'cachedUntil'),
+        }
+
 class API(object):
     """A wrapper around the EVE API."""
 
@@ -174,6 +189,7 @@ class API(object):
             cache=None,
             api_key=None,
             default_result_key='result', # see note 1)
+            result_formatter=default_result_formatter,
         ):
         self.base_url = base_url
 
@@ -189,6 +205,12 @@ class API(object):
         self._set_last_timestamps()
 
         self.default_result_key = default_result_key
+        self.result_formatter = result_formatter
+
+    def format_result(self, source, result):
+        # this is to allow easier sanity check specific to subclasses,
+        # perhaps.
+        return self.result_formatter(source, result)
 
     def _set_last_timestamps(self, current_time=0, cached_until=0):
         self.last_timestamps = {
